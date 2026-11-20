@@ -15,7 +15,10 @@
     </header>
     <section class="game-frame" aria-label="Maze game">
       <aside class="game-sidebar">
-        <div class="size-picker"><label for="size">Maze size</label><select id="size" aria-label="Maze size"></select></div>
+        <div class="utility-row">
+          <div class="size-picker"><label for="size">Maze size</label><select id="size" aria-label="Maze size"></select></div>
+          <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Mute sound">🔊 Sound</button>
+        </div>
         <div class="mission-note"><span class="note-icon" aria-hidden="true">☞</span><p id="info">Loading a suspiciously clever maze…</p></div>
         <div class="scoreboard" aria-label="Game status"><p id="round" class="round-badge"></p><p id="moves" class="move-count">Moves: 0</p></div>
         <p id="flavor" class="flavor" aria-live="polite">Fresh maze. Fresh opportunities to embarrass yourself.</p>

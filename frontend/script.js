@@ -26,6 +26,81 @@ const KEYS = {
   ArrowRight: [0, 1],
 };
 
+// ---------- sound (presentation-only, no game-state ownership) ----------
+
+const SOUND_PREFERENCE_KEY = "maze-goblin-sound-enabled";
+let soundEnabled = true;
+let audioContext = null;
+let soundBusyUntil = 0;
+
+try {
+  const savedSoundPreference = localStorage.getItem(SOUND_PREFERENCE_KEY);
+  soundEnabled = savedSoundPreference === null || savedSoundPreference === "true";
+} catch (_) {
+  // Sound remains opt-in-by-interaction if storage is unavailable.
+}
+
+function updateSoundToggle() {
+  const toggle = document.getElementById("soundToggle");
+  toggle.setAttribute("aria-pressed", String(soundEnabled));
+  toggle.setAttribute("aria-label", soundEnabled ? "Mute sound" : "Enable sound");
+  toggle.textContent = soundEnabled ? "🔊 Sound" : "🔇 Muted";
+}
+
+function unlockSound() {
+  if (!soundEnabled) return;
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!audioContext) audioContext = new AudioContextClass();
+    if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+  } catch (_) {
+    // Audio is always optional; a browser error must not affect the game.
+  }
+}
+
+function playTone(frequency, duration, volume, type = "sine", delay = 0) {
+  if (!soundEnabled || !audioContext || audioContext.state !== "running") return false;
+  const start = audioContext.currentTime + delay;
+  if (start < soundBusyUntil) return false;
+
+  try {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.02);
+    soundBusyUntil = start + duration;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function playSfx(name) {
+  if (!soundEnabled) return;
+  if (audioContext && audioContext.state !== "running") {
+    audioContext.resume().then(() => playSfx(name)).catch(() => {});
+    return;
+  }
+  const sounds = {
+    player: () => playTone(420, 0.06, 0.055, "sine"),
+    ai: () => playTone(250, 0.045, 0.02, "triangle"),
+    button: () => playTone(330, 0.045, 0.03, "sine"),
+    newMaze: () => playTone(380, 0.09, 0.04, "triangle"),
+    nextRound: () => playTone(520, 0.08, 0.04, "triangle"),
+    goal: () => playTone(660, 0.16, 0.07, "sine"),
+    aiComplete: () => playTone(310, 0.12, 0.035, "square")
+  };
+  const play = sounds[name];
+  if (play) play();
+}
+
 // Presentation-only commentary. It observes the existing game messages and
 // never participates in movement, scoring, timers, or round progression.
 const flavor = document.getElementById("flavor");
@@ -214,10 +289,12 @@ function startReplay() {
     aiTrail = path.slice(0, i + 1);
     info.textContent = "AI move " + i + " of " + (path.length - 1);
     drawMaze();
+    if (i > 0 && i < path.length - 1 && i % 3 === 0) playSfx("ai");
     i++;
 
     if (i >= path.length) {
       clearInterval(replayTimer);
+      playSfx("aiComplete");
       info.textContent = "The AI reached the goal in " + ai.moves +
         " moves (after " + ai.episode + " episodes of training).";
       button.disabled = false;
@@ -283,7 +360,10 @@ function movePlayer(dRow, dCol) {
   drawMaze();
 
   if (isSame(player, [maze.rows - 1, maze.cols - 1])) {
+    playSfx("goal");
     finishAttempt();
+  } else {
+    playSfx("player");
   }
 }
 
@@ -342,6 +422,7 @@ async function loadSizes() {
 document.addEventListener("keydown", (event) => {
   if (KEYS[event.key]) {
     event.preventDefault();
+    unlockSound();
     movePlayer(KEYS[event.key][0], KEYS[event.key][1]);
   }
 });
@@ -351,17 +432,40 @@ document.getElementById("size").addEventListener("change", (event) => {
   event.target.blur();       // so arrow keys move the robot, not the dropdown
   loadMaze();
 });
-document.getElementById("newMaze").addEventListener("click", loadMaze);
+document.getElementById("newMaze").addEventListener("click", () => {
+  unlockSound();
+  playSfx("newMaze");
+  loadMaze();
+});
 document.getElementById("watchAI").addEventListener("click", (event) => {
+  unlockSound();
+  playSfx("button");
   event.target.blur();
   startReplay();
 });
 document.getElementById("nextRound").addEventListener("click", () => {
+  unlockSound();
+  playSfx("nextRound");
   roundIndex++;
   resetAttempt();
 });
+document.getElementById("soundToggle").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  if (!soundEnabled) soundBusyUntil = 0;
+  try {
+    localStorage.setItem(SOUND_PREFERENCE_KEY, String(soundEnabled));
+  } catch (_) {
+    // The button still works even when storage is unavailable.
+  }
+  updateSoundToggle();
+  if (soundEnabled) {
+    unlockSound();
+    playSfx("button");
+  }
+});
 
 async function start() {
+  updateSoundToggle();
   await loadSizes();
   await loadMaze();
 }
