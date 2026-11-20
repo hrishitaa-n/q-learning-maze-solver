@@ -65,7 +65,8 @@ function drawMaze() {
   grid.innerHTML = "";
 
   // 50px cells for small grids, smaller cells so big grids still fit
-  const size = Math.min(50, Math.floor(520 / maze.cols));
+  const available = Math.min(window.innerWidth - 40, 760);   // total grid width allowed
+const size = Math.min(80, Math.floor(available / maze.cols));
   grid.style.gridTemplateColumns = `repeat(${maze.cols}, ${size}px)`;
 
   const start = [0, 0];
@@ -93,19 +94,26 @@ function drawMaze() {
       }
 
       if (aiPos && isSame(pos, aiPos)) {
-        cell.textContent = "👾";
+        cell.textContent = "🤖";                       // the AI
       } else if (!replaying && isSame(pos, player)) {
-        cell.textContent = "🤖";
+        const face = document.createElement("img");    // you
+        face.src = "images/me.jpg";
+        face.alt = "You";
+        face.className = "face";
+        cell.appendChild(face);
       } else if (isGoal) {
-        cell.textContent = "🏆";
+        const job = document.createElement("span");    // the prize
+        job.className = "job";
+        job.textContent = "JOB";
+        job.style.fontSize = Math.floor(size * 0.36) + "px";
+        cell.appendChild(job);
       } else if (isWall(pos)) {
-        cell.textContent = "🧱";
+        cell.textContent = "💤";                       // sleeping walls
       }
       grid.appendChild(cell);
     }
   }
 }
-
 function showNextButton(show) {
   const button = document.getElementById("nextRound");
   button.hidden = !show;
@@ -266,7 +274,7 @@ async function loadMaze() {
   roundIndex = 0;
 
   document.getElementById("info").textContent =
-    "Goal: reach the 🏆 in exactly " + maze.bfs_moves +
+    "Goal: Get the job in exactly " + maze.bfs_moves +
     " moves, the shortest possible route. You get " + aiRounds.length + " rounds.";
   resetAttempt();
 }
