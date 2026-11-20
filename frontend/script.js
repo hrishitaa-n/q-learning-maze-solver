@@ -26,6 +26,45 @@ const KEYS = {
   ArrowRight: [0, 1],
 };
 
+// Presentation-only commentary. It observes the existing game messages and
+// never participates in movement, scoring, timers, or round progression.
+const flavor = document.getElementById("flavor");
+function setFlavor(message) {
+  if (flavor.textContent !== message) flavor.textContent = message;
+}
+function updateFlavor() {
+  const result = document.getElementById("result").textContent;
+  const counter = document.getElementById("counter").textContent;
+  const replay = document.getElementById("replayInfo").textContent;
+  const round = document.getElementById("round").textContent;
+
+  if (replay.startsWith("AI move")) {
+    setFlavor("The AI has a plan. Hopefully.");
+  } else if (replay.startsWith("The AI reached")) {
+    setFlavor("Fine. The robot has officially flexed.");
+  } else if (counter.includes("Humans Win")) {
+    setFlavor("OKAY, SHOW OFF! You actually did it.");
+  } else if (counter.includes("AI takes over")) {
+    setFlavor("Well... that was an interesting strategy.");
+  } else if (counter.includes("The AI trained")) {
+    setFlavor("Well... that was an interesting strategy.");
+  } else if (counter.includes("You beat an AI")) {
+    setFlavor("Not bad. But the maze is still being extremely specific.");
+  } else if (round.startsWith("Round 2")) {
+    setFlavor("Round two. Let's see if you've learned anything.");
+  } else if (round.startsWith("Round 3")) {
+    setFlavor("Final round. The drama is entirely unnecessary.");
+  } else if (document.getElementById("info").textContent.startsWith("Goal:")) {
+    setFlavor("Fresh maze. Fresh opportunities to embarrass yourself.");
+  }
+}
+
+new MutationObserver(updateFlavor).observe(document.querySelector(".game-frame"), {
+  childList: true,
+  characterData: true,
+  subtree: true
+});
+
 // ---------- maze pool (loaded from static JSON files) ----------
 
 async function getPool(size) {
@@ -94,8 +133,10 @@ const size = Math.min(80, Math.floor(available / maze.cols));
       }
 
       if (aiPos && isSame(pos, aiPos)) {
+        cell.classList.add("ai-cell");
         cell.textContent = "🤖";                       // the AI
       } else if (!replaying && isSame(pos, player)) {
+        cell.classList.add("player-cell");
         const face = document.createElement("img");    // you
         face.src = "images/me.jpg";
         face.alt = "You";

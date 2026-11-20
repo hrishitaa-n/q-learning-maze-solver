@@ -2,22 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Q-Learning Maze Race</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maze Goblin vs. The Algorithm</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Q-Learning Maze Race</h1>
-  <p>Maze size: <select id="size"></select></p>
-  <p id="info"></p>
-  <p id="round"></p>
-  <div id="maze"></div>
-  <p id="moves">Moves: 0</p>
-  <p id="result"></p>
-  <p id="counter"></p>
-  <p id="replayInfo"></p>
-  <button id="watchAI" hidden>See what the AI did</button>
-  <button id="nextRound" hidden>Next round</button>
-  <button id="newMaze">New maze</button>
+  <main class="game-shell">
+    <header class="masthead">
+      <p class="eyebrow">Human vs. Machine · absolutely no pressure</p>
+      <h1><span class="title-spark">✦</span> Maze Goblin <em>vs.</em> The Algorithm</h1>
+      <p class="tagline">Get the job. Outsmart the robot. Try not to bonk into a sleepy wall.</p>
+    </header>
+    <section class="game-frame" aria-label="Maze game">
+      <aside class="game-sidebar">
+        <div class="size-picker"><label for="size">Maze size</label><select id="size" aria-label="Maze size"></select></div>
+        <div class="mission-note"><span class="note-icon" aria-hidden="true">☞</span><p id="info">Loading a suspiciously clever maze…</p></div>
+        <div class="scoreboard" aria-label="Game status"><p id="round" class="round-badge"></p><p id="moves" class="move-count">Moves: 0</p></div>
+        <p id="flavor" class="flavor" aria-live="polite">Fresh maze. Fresh opportunities to embarrass yourself.</p>
+        <div class="button-stack">
+          <button id="newMaze" class="button button-primary">↻ New maze</button>
+          <button id="watchAI" class="button button-secondary" hidden>See what the AI did</button>
+          <button id="nextRound" class="button button-secondary" hidden>Next round</button>
+        </div>
+        <div class="controls-hint" aria-label="Controls"><span>Move your goblin</span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div>
+      </aside>
+      <section class="maze-stage">
+        <div class="stage-label"><span class="pulse-dot"></span> live maze nonsense</div>
+        <div id="maze" role="grid" aria-label="Maze"></div>
+        <div class="message-zone"><p id="result" aria-live="polite"></p><p id="counter" aria-live="polite"></p><p id="replayInfo" aria-live="polite"></p></div>
+      </section>
+    </section>
+  </main>
   <script src="script.js"></script>
 </body>
 </html>
