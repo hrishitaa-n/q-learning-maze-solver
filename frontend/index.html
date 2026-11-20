@@ -32,6 +32,12 @@
       <section class="maze-stage">
         <div class="stage-label"><span class="pulse-dot"></span> live maze nonsense</div>
         <div id="maze" role="grid" aria-label="Maze"></div>
+        <div class="touch-controls" aria-label="Touch controls">
+          <button type="button" class="touch-button touch-up" data-row="-1" data-col="0" aria-label="Move up">↑</button>
+          <button type="button" class="touch-button touch-left" data-row="0" data-col="-1" aria-label="Move left">←</button>
+          <button type="button" class="touch-button touch-down" data-row="1" data-col="0" aria-label="Move down">↓</button>
+          <button type="button" class="touch-button touch-right" data-row="0" data-col="1" aria-label="Move right">→</button>
+        </div>
         <div class="message-zone"><p id="result" aria-live="polite"></p><p id="counter" aria-live="polite"></p><p id="replayInfo" aria-live="polite"></p></div>
       </section>
     </section>

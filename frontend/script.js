@@ -449,6 +449,12 @@ document.getElementById("nextRound").addEventListener("click", () => {
   roundIndex++;
   resetAttempt();
 });
+document.querySelectorAll(".touch-button").forEach((button) => {
+  button.addEventListener("click", () => {
+    unlockSound();
+    movePlayer(Number(button.dataset.row), Number(button.dataset.col));
+  });
+});
 document.getElementById("soundToggle").addEventListener("click", () => {
   soundEnabled = !soundEnabled;
   if (!soundEnabled) soundBusyUntil = 0;
